@@ -13,7 +13,7 @@ const helpMessage = `
 Use "/fortune" to get me to print out a Unix fortune.
 Use "/fortune offensive" if you want me to be filthy.
 
-For more information, check [my Github repo](https://github.com/fsufitch/discord-fortune-bot).
+For more information, check my Github repo: https://github.com/fsufitch/discord-fortune-bot.
 `
 
 func runBotAsync(token string, stop <-chan bool, doneChan chan<- error) {
