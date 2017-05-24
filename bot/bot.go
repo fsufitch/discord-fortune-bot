@@ -9,12 +9,9 @@ import (
 	"github.com/fsufitch/discord-fortune-bot/fortune"
 )
 
-const helpMessage = `
-Use "/fortune" to get me to print out a Unix fortune.
-Use "/fortune offensive" if you want me to be filthy.
+const errorTemplate = "```Error: %s\n\nTry \"/fortune -h\" to get help.```"
 
-For more information, check my Github repo: https://github.com/fsufitch/discord-fortune-bot.
-`
+const messageTemplate = "```\n%s\n```"
 
 func runBotAsync(token string, stop <-chan bool, doneChan chan<- error) {
 	log.Printf("Starting bot with token %s", token)
@@ -56,32 +53,31 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	// If the message is "ping" reply with "Pong!"
-	content := strings.ToLower(m.Content)
-	fields := strings.Fields(content)
-	if len(fields) < 1 || fields[0] != "/fortune" {
+	fields := strings.Fields(m.Content)
+	if len(fields) < 1 || strings.ToLower(fields[0]) != "/fortune" {
 		return
 	}
 
-	offensive := false
+	options, err := parseFlags(fields[1:])
 
-	if len(fields) >= 2 {
-		if fields[1] == "help" {
-			s.ChannelMessageSend(m.ChannelID, helpMessage)
-			return
-		}
-		if fields[1] == "offensive" {
-			offensive = true
-		} else {
-			msg := fmt.Sprintf("Unknown fortune action: %s", fields[1])
-			s.ChannelMessageSend(m.ChannelID, msg)
-			return
-		}
+	if options.TextOverride != "" {
+		message := fmt.Sprintf(messageTemplate, options.TextOverride)
+		s.ChannelMessageSend(m.ChannelID, message)
+		return
 	}
 
-	f, err := fortune.GetFortune(offensive)
+	if err != nil {
+		message := fmt.Sprintf(errorTemplate, err.Error())
+		s.ChannelMessageSend(m.ChannelID, message)
+		return
+	}
+
+	f, err := fortune.GetFortune(options.Offensive, options.Length, options.Passthrough)
 	if err == nil {
-		s.ChannelMessageSend(m.ChannelID, f)
+		message := fmt.Sprintf(messageTemplate, f)
+		s.ChannelMessageSend(m.ChannelID, message)
 	} else {
-		s.ChannelMessageSend(m.ChannelID, "Error getting fortune: "+err.Error())
+		message := fmt.Sprintf(errorTemplate, err.Error())
+		s.ChannelMessageSend(m.ChannelID, message)
 	}
 }
