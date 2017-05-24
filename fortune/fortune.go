@@ -31,7 +31,7 @@ func GetFortune(offensive bool, length Length, passthroughOptions []string) (str
 	args = append(args, passthroughOptions...)
 
 	cmd := exec.Command("fortune", args...)
-	outBytes, err := cmd.Output()
+	outBytes, err := cmd.CombinedOutput()
 
 	return string(outBytes), err
 }
