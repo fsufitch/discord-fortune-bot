@@ -52,7 +52,6 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	// If the message is "ping" reply with "Pong!"
 	fields := strings.Fields(m.Content)
 	if len(fields) < 1 || strings.ToLower(fields[0]) != "/fortune" {
 		return
